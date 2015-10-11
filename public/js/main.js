@@ -1,7 +1,9 @@
-var socket = io.connect('http://swiftping.app:3000');
+var url = window.location.href;
+
+var socket = io.connect(url.replace(/\/$/, ""));
 
 $(document).ready(function() {
-    
+
     var canvas = document.getElementById("canvas"),
     ctx = canvas.getContext("2d");
 
