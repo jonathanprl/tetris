@@ -2,7 +2,7 @@ var socket = io.connect('http://swiftping.app:3000');
 
 $(document).ready(function() {
     
-    var canvas = $("#canvas"),
+    var canvas = document.getElementById("canvas"),
     ctx = canvas.getContext("2d");
 
     canvas.width = canvas.height = 500;
