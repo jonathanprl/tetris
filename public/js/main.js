@@ -1,15 +1,29 @@
-var url = window.location.href;
+var url = window.location.href,
+    socket = io.connect(url.replace(/\/$/, "")),
+    id;
 
-var socket = io.connect(url.replace(/\/$/, ""));
-
-$(document).ready(function() {
+var Ballr = function () {
+    this.url = window.location.href;
+    this.socket = io.connect(url.replace(/\/$/, ""));
 
     var canvas = document.getElementById("canvas"),
-    ctx = canvas.getContext("2d");
+    this.ctx = canvas.getContext("2d");
+};
+
+var BallrUser = function () {
+    this.id = Ballr.socket.on('id', function(data) {
+        console.log("id");
+        return data.id;
+    });
+};
+
+function init() {
+
+    
 
     canvas.width = canvas.height = 500;
 
-    var uid = guid()
+    var uid = id,
         targetX = 0,
         targetY = 0,
         x = 10,
@@ -89,4 +103,4 @@ $(document).ready(function() {
             ctx.fill();
         }
     });
-});
+};
