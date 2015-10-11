@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+
+    <body>
+
+        <canvas id="canvas"></canvas>
+
+        <script src="/js/plugins/jquery/dist/jquery.min.js"></script>
+        <script src="/js/plugins/socket.io-client/socket.io.js"></script>
+        <script>
+            var socket = io.connect('http://swiftping.app:3000');
+            socket.on('news', function (data) {
+                console.log(data);
+                socket.emit('my other event', { my: 'data' });
+            });
+      </script>
+      <script src="/js/main.js"></script>
+
+    </body>
+</html>
