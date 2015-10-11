@@ -1,7 +1,8 @@
 var socket = io.connect('http://swiftping.app:3000');
 
 $(document).ready(function() {
-    var canvas=document.getElementById("canvas"),
+    
+    var canvas = $("#canvas"),
     ctx = canvas.getContext("2d");
 
     canvas.width = canvas.height = 500;
@@ -19,8 +20,8 @@ $(document).ready(function() {
     function update() {
         var tx = targetX - x,
             ty = targetY - y,
-            dist = Math.sqrt(tx*tx+ty*ty),
-            rad = Math.atan2(ty,tx),
+            dist = Math.sqrt(tx * tx + ty * ty),
+            rad = Math.atan2(ty, tx),
             angle = rad/Math.PI * 180;
 
             velX = (tx/dist)*speed,
@@ -32,7 +33,7 @@ $(document).ready(function() {
             ctx.fillStyle = colour;
             // ctx.clearRect(0,0,500,500);
             ctx.beginPath();
-            ctx.arc(x,y,5,0,Math.PI*2);
+            ctx.arc(x, y, 5, 0, Math.PI*2);
             ctx.fill();
 
             socket.emit('upload', {
@@ -42,7 +43,7 @@ $(document).ready(function() {
                 colour: colour
             });
 
-        setTimeout(update, 100);
+        setTimeout(update, 10);
     }
 
     function draw() {

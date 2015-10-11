@@ -9,7 +9,7 @@ server.listen(3000, function () {
     var host = server.address().address;
     var port = server.address().port;
 
-    console.log('Example app listening at http://%s:%s', host, port);
+    console.log('Ballr server started [http://%s:%s]', host, port);
 });
 
 io.on('connection', function (socket) {
@@ -18,3 +18,5 @@ io.on('connection', function (socket) {
         console.log(data);
     });  
 });
+
+// TODO: MongoDB to hold data for each "match", so new players see paths and replays can be created.
