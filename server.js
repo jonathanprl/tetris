@@ -13,7 +13,9 @@ server.listen(3000, function () {
 });
 
 io.on('connection', function (socket) {
-    console.log(socket.id + ' has joined.');
+    console.log(socket.id);
+    socket.emit('id', socket.id);
+
     socket.on('upload', function (data) {
         io.emit('download', data);
     });  
