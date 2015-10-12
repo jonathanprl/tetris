@@ -75,7 +75,7 @@ BallrApp.prototype.updatePlayerContext = function(data) {
 
     this.ctx[data.uuid] = this.canvas.getContext("2d");
     this.ctx[data.uuid].fillStyle = data.colour;
-    // this.ctx[data.uuid].clearRect(0,0,500,500);
+    // this.ctx[data.uuid].clearRect(0,0,500,500); // just circles flying around
     this.ctx[data.uuid].beginPath();
     this.ctx[data.uuid].arc(data.coords.x, data.coords.y, 5, 0, Math.PI*2);
     this.ctx[data.uuid].fill();
@@ -99,13 +99,10 @@ BallrApp.prototype.start = function() {
     this.update();
 
     this.socket.on('download', function(data) {
-        if (data.uuid != ballr.uuid) {
-            if (data.uuid in ballr.ctx) {
-                ballr.updatePlayerContext(data);
-            } else {
-                ballr.addPlayerContext(data.uuid);
-            }
-            
+        if (data.uuid in ballr.ctx) {
+            ballr.updatePlayerContext(data);
+        } else {
+            ballr.addPlayerContext(data.uuid);
         }
     });
 };
@@ -124,8 +121,6 @@ BallrApp.prototype.update = function() {
 
     this.coords.x += this.velX;
     this.coords.y += this.velY;
-
-    this.updatePlayerContext(this);
 
     this.updateServer();
 
