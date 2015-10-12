@@ -13,7 +13,7 @@ server.listen(3000, function () {
 });
 
 io.on('connection', function (socket) {
-    console.log(socket.id);
+    console.log("%s has connected.", socket.id);
 
     socket.on('upload', function (data) {
         io.emit('download', data);
@@ -21,7 +21,7 @@ io.on('connection', function (socket) {
 
     socket.on('ready', function (data) {
         console.log("ready");
-        io.emit('id', socket.id);
+        socket.emit('id', socket.id);
     });
 });
 

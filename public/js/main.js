@@ -6,7 +6,7 @@ var BallrApp = function () {
 
     // Find the canvas and get context
     this.canvas = document.getElementById("canvas");
-    this.ctx = this.canvas.getContext("2d");
+    this.ctx = {};
 
     // Let server know we are ready!
     this.socket.emit('ready', true);
@@ -20,11 +20,19 @@ var BallrApp = function () {
         y: 10
     };
 
+    // Get unique id from server
+
+    this.socket.on('id', function(data) {
+        ballr.setUuid(data);
+        ballr.addPlayerContext(data);
+    });
+
     return this;
 };
 
 // Set user id.
 BallrApp.prototype.setUuid = function(uuid) {
+    console.log("You are %s", uuid);
     this.uuid = uuid;
 };
 
@@ -39,16 +47,13 @@ BallrApp.prototype.generateColour = function() {
     this.colour = "rgb(" + colour.join(',') + ")";
 };
 
-// Get colour
-BallrApp.prototype.generateColour = function() {
-    return this.colour;
-};
-
 BallrApp.prototype.updateServer = function() {
     this.socket.emit('upload', {
         uuid: this.uuid,
-        x: this.coords.x,
-        y: this.coords.y,
+        coords: {    
+            x: this.coords.x,
+            y: this.coords.y
+        },
         colour: this.colour
     });
 };
@@ -58,6 +63,22 @@ BallrApp.prototype.updateCoordinates = function(x, y) {
         x: x,
         y: y
     };
+};
+
+BallrApp.prototype.addPlayerContext = function(uuid) {
+    console.log("Added player %s", uuid);
+    this.ctx[uuid] = this.canvas.getContext("2d");
+};
+
+BallrApp.prototype.updatePlayerContext = function(data) {
+    console.log("Updating player %s", data.uuid);
+
+    this.ctx[data.uuid] = this.canvas.getContext("2d");
+    this.ctx[data.uuid].fillStyle = data.colour;
+    // this.ctx[data.uuid].clearRect(0,0,500,500);
+    this.ctx[data.uuid].beginPath();
+    this.ctx[data.uuid].arc(data.coords.x, data.coords.y, 5, 0, Math.PI*2);
+    this.ctx[data.uuid].fill();
 };
 
 BallrApp.prototype.start = function() {
@@ -79,18 +100,19 @@ BallrApp.prototype.start = function() {
 
     this.socket.on('download', function(data) {
         if (data.uuid != ballr.uuid) {
-            var ctx = ballr.canvas.getContext("2d");
-
-            ballr.ctx.fillStyle = data.colour;
-            // ballr.ctx.clearRect(0,0,500,500);
-            ballr.ctx.beginPath();
-            ballr.ctx.arc(data.x, data.y, 5, 0, Math.PI*2);
-            ballr.ctx.fill();
+            if (data.uuid in ballr.ctx) {
+                ballr.updatePlayerContext(data);
+            } else {
+                ballr.addPlayerContext(data.uuid);
+            }
+            
         }
     });
 };
 
 BallrApp.prototype.update = function() {
+
+    // Calculate position, speed and turn angle
     var tx = this.targetX - this.coords.x,
     ty = this.targetY - this.coords.y,
     dist = Math.sqrt(tx * tx + ty * ty),
@@ -103,11 +125,7 @@ BallrApp.prototype.update = function() {
     this.coords.x += this.velX;
     this.coords.y += this.velY;
 
-    this.ctx.fillStyle = this.colour;
-    // this.ctx.clearRect(0,0,500,500);
-    this.ctx.beginPath();
-    this.ctx.arc(ballr.coords.x, ballr.coords.y, 5, 0, Math.PI*2);
-    this.ctx.fill();
+    this.updatePlayerContext(this);
 
     this.updateServer();
 
@@ -115,7 +133,7 @@ BallrApp.prototype.update = function() {
         ballr.update();
     }
 
-    setTimeout(updateAgain, 10);
+    setTimeout(updateAgain, 20);
 };
 
 // App Initiation
