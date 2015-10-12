@@ -14,11 +14,15 @@ server.listen(3000, function () {
 
 io.on('connection', function (socket) {
     console.log(socket.id);
-    socket.emit('id', socket.id);
 
     socket.on('upload', function (data) {
         io.emit('download', data);
-    });  
+    });
+
+    socket.on('ready', function (data) {
+        console.log("ready");
+        io.emit('id', socket.id);
+    });
 });
 
 // TODO: MongoDB to hold data for each "match", so new players see paths and replays can be created.

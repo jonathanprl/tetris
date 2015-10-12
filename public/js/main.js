@@ -1,106 +1,129 @@
-var url = window.location.href,
-    socket = io.connect(url.replace(/\/$/, "")),
-    id;
+var BallrApp = function () {
 
-var Ballr = function () {
-    this.url = window.location.href;
+    // Connect to the server via socket
+    var url = window.location.href;
     this.socket = io.connect(url.replace(/\/$/, ""));
 
-    var canvas = document.getElementById("canvas"),
-    this.ctx = canvas.getContext("2d");
+    // Find the canvas and get context
+    this.canvas = document.getElementById("canvas");
+    this.ctx = this.canvas.getContext("2d");
+
+    // Let server know we are ready!
+    this.socket.emit('ready', true);
+
+    // Generate a colour (TODO: limit boring colours)
+    this.generateColour();
+
+    // Set initial coordinates (TODO: Add this to the settings file)
+    this.coords = {
+        x: 10,
+        y: 10
+    };
+
+    return this;
 };
 
-var BallrUser = function () {
-    this.id = Ballr.socket.on('id', function(data) {
-        console.log("id");
-        return data.id;
+// Set user id.
+BallrApp.prototype.setUuid = function(uuid) {
+    this.uuid = uuid;
+};
+
+// Generate users colour
+BallrApp.prototype.generateColour = function() {
+    var colour = [
+        Math.floor(Math.random() * 255),
+        Math.floor(Math.random() * 255),
+        Math.floor(Math.random() * 255)
+    ];
+
+    this.colour = "rgb(" + colour.join(',') + ")";
+};
+
+// Get colour
+BallrApp.prototype.generateColour = function() {
+    return this.colour;
+};
+
+BallrApp.prototype.updateServer = function() {
+    this.socket.emit('upload', {
+        uuid: this.uuid,
+        x: this.coords.x,
+        y: this.coords.y,
+        colour: this.colour
     });
 };
 
-function init() {
+BallrApp.prototype.updateCoordinates = function(x, y) {
+    this.coords = {
+        x: x,
+        y: y
+    };
+};
 
-    
+BallrApp.prototype.start = function() {
 
-    canvas.width = canvas.height = 500;
+    this.canvas.width = this.canvas.height = 1000;
 
-    var uid = id,
-        targetX = 0,
-        targetY = 0,
-        x = 10,
-        y = 10,
-        velX = 0,
-        velY = 0,
-        speed = 2,
-        colour = randomRGB();
+    this.targetX = 0,
+        this.targetY = 0,
+        this.velX = 0,
+        this.velY = 0,
+        this.speed = 2;
 
-    function update() {
-        var tx = targetX - x,
-            ty = targetY - y,
-            dist = Math.sqrt(tx * tx + ty * ty),
-            rad = Math.atan2(ty, tx),
-            angle = rad/Math.PI * 180;
-
-            velX = (tx/dist)*speed,
-            velY = (ty/dist)*speed;
-
-            x += velX
-            y += velY
-
-            ctx.fillStyle = colour;
-            // ctx.clearRect(0,0,500,500);
-            ctx.beginPath();
-            ctx.arc(x, y, 5, 0, Math.PI*2);
-            ctx.fill();
-
-            socket.emit('upload', {
-                uid: uid,
-                x: x,
-                y: y,
-                colour: colour
-            });
-
-        setTimeout(update, 10);
-    }
-
-    function draw() {
-
-    }
-
-    function randomRGB() {
-        var colour = [
-            Math.floor(Math.random() * 255),
-            Math.floor(Math.random() * 255),
-            Math.floor(Math.random() * 255)
-        ];
-
-        return "rgb(" + colour.join(',') + ")";
-    }
-
-    function guid() {
-        function s4() {
-            return Math.floor((1 + Math.random()) * 0x10000)
-            .toString(16)
-            .substring(1);
-        }
-        return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-        s4() + '-' + s4() + s4() + s4();
-    }
-
-    update();
-
-    canvas.addEventListener("mousemove", function(e){
-        targetX = e.pageX;
-        targetY = e.pageY;
+    this.canvas.addEventListener("mousemove", function(e) {
+        ballr.targetX = e.pageX;
+        ballr.targetY = e.pageY;
     });
 
-    socket.on('download', function(data) {
-        console.log(data);
-        if (data.uid != uid) {
-            ctx.fillStyle = data.colour;
-            // ctx.clearRect(0,0,500,500);
-            ctx.beginPath();
-            ctx.arc(data.x, data.y, 5, 0, Math.PI*2);
-            ctx.fill();
+    this.update();
+
+    this.socket.on('download', function(data) {
+        if (data.uuid != ballr.uuid) {
+            var ctx = ballr.canvas.getContext("2d");
+
+            ballr.ctx.fillStyle = data.colour;
+            // ballr.ctx.clearRect(0,0,500,500);
+            ballr.ctx.beginPath();
+            ballr.ctx.arc(data.x, data.y, 5, 0, Math.PI*2);
+            ballr.ctx.fill();
         }
     });
 };
+
+BallrApp.prototype.update = function() {
+    var tx = this.targetX - this.coords.x,
+    ty = this.targetY - this.coords.y,
+    dist = Math.sqrt(tx * tx + ty * ty),
+    rad = Math.atan2(ty, tx),
+    angle = rad / Math.PI * 180;
+
+    this.velX = (tx / dist) * this.speed,
+    this.velY = (ty / dist) * this.speed;
+
+    this.coords.x += this.velX;
+    this.coords.y += this.velY;
+
+    this.ctx.fillStyle = this.colour;
+    // this.ctx.clearRect(0,0,500,500);
+    this.ctx.beginPath();
+    this.ctx.arc(ballr.coords.x, ballr.coords.y, 5, 0, Math.PI*2);
+    this.ctx.fill();
+
+    this.updateServer();
+
+    function updateAgain() {
+        ballr.update();
+    }
+
+    setTimeout(updateAgain, 10);
+};
+
+// App Initiation
+
+var ballr = new BallrApp();
+
+// Get unique id from server
+
+ballr.socket.on('id', function(data) {
+    ballr.setUuid(data);
+});
