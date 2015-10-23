@@ -16,7 +16,7 @@ var BallrApp = function () {
 
     // Set initial coordinates (TODO: Add this to the settings file)
     this.coords = {
-        x: 10,
+        x: 15,
         y: 10
     };
 
@@ -124,6 +124,7 @@ BallrApp.prototype.update = function() {
 
     this.updateServer();
 
+    // Workaround due to inability to use prototype function in setTimeout.
     function updateAgain() {
         ballr.update();
     }
