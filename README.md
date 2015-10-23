@@ -1,4 +1,4 @@
-# ballr
+# tetris
 Simple javascript game built with MEAN stack
 
 ## Example
