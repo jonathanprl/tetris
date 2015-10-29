@@ -16,7 +16,7 @@ var BallrApp = function () {
 
     // Set initial coordinates (TODO: Add this to the settings file)
     this.coords = {
-        x: 15,
+        x: 10,
         y: 10
     };
 
@@ -71,7 +71,7 @@ BallrApp.prototype.addPlayerContext = function(uuid) {
 };
 
 BallrApp.prototype.updatePlayerContext = function(data) {
-    console.log("Updating player %s", data.uuid);
+    // console.log("Updating player %s", data.uuid);
 
     this.ctx[data.uuid] = this.canvas.getContext("2d");
     this.ctx[data.uuid].fillStyle = data.colour;
@@ -83,17 +83,19 @@ BallrApp.prototype.updatePlayerContext = function(data) {
 
 BallrApp.prototype.start = function() {
 
+    document.getElementById('ready').style.display = 'none';
+
     this.canvas.width = this.canvas.height = 1000;
 
     this.targetX = 0,
-        this.targetY = 0,
-        this.velX = 0,
-        this.velY = 0,
-        this.speed = 2;
+    this.targetY = 0,
+    this.velX = 2,
+    this.velY = 2,
+    this.speed = 2;
 
     this.canvas.addEventListener("mousemove", function(e) {
-        ballr.targetX = e.pageX;
-        ballr.targetY = e.pageY;
+        ballr.targetX = e.pageX - 10;
+        ballr.targetY = e.pageY - 10;
     });
 
     this.update();
@@ -110,14 +112,25 @@ BallrApp.prototype.start = function() {
 BallrApp.prototype.update = function() {
 
     // Calculate position, speed and turn angle
-    var tx = this.targetX - this.coords.x,
-    ty = this.targetY - this.coords.y,
-    dist = Math.sqrt(tx * tx + ty * ty),
-    rad = Math.atan2(ty, tx),
+    // targetX = Current cursor position
+    // coords.x = Current head position
+    // dist = distance between coordinates (targetX, targetY) and (coords.x, coords.y)
+
+    var deltaX = this.targetX - this.coords.x,
+    deltaY = this.targetY - this.coords.y;
+
+    var dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY),
+    rad = Math.atan2(deltaY +10, deltaX+10),
     angle = rad / Math.PI * 180;
 
-    this.velX = (tx / dist) * this.speed,
-    this.velY = (ty / dist) * this.speed;
+    // console.log("Cursor coords: (%s, %s)", this.targetX, this.targetY);
+    // console.log("Head coords: (%s, %s)", this.coords.x, this.coords.y);
+    // console.log("Head -> Cursor Distance: %s", dist);        
+
+    // console.log("Velocity: (%s, %s)", this.velX, this.velY);
+
+    this.velX = (deltaX / dist) * this.speed,
+    this.velY = (deltaY / dist) * this.speed;
 
     this.coords.x += this.velX;
     this.coords.y += this.velY;
